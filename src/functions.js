@@ -28,12 +28,18 @@ const readScoresFile = async () => {
   return JSON.parse(data);
 };
 
+const getTeamsName = async () => {
+  const datas = await readScoresFile();
+
+  return datas.map((data) => data.team);
+};
+
 const addScore = async (team, score) => {
   if (!team || typeof team !== 'string') {
     throw new Error('Team are required or must be a string!');
   }
 
-  if (typeof score !== 'number') {
+  if (isNaN(score)) {
     throw new Error('Score are required or must be a number!');
   }
 
@@ -45,14 +51,11 @@ const addScore = async (team, score) => {
 
   const teamIndex = scores.findIndex((item) => item.team === team);
 
-  if (teamIndex !== -1) {
-    scores[teamIndex].score += score;
-  } else {
-    scores.push({
-      team,
-      score,
-    });
+  if (teamIndex === -1) {
+    throw Error('Team not found.');
   }
+
+  scores[teamIndex].score += parseInt(score);
 
   await writeScoresFile(scores);
 };
@@ -67,4 +70,5 @@ module.exports = {
   createScoresFile,
   addScore,
   getScoresAscending,
+  getTeamsName,
 };
