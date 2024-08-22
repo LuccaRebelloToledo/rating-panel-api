@@ -27,9 +27,33 @@ main()
     app.get('/', async (_request, response) => {
       const scores = await getScoresAscending();
 
+      const html = `
+      <head>
+        <meta charset="UTF-8">
+        <title>Ranking</title>
+      </head>
+      <body>
+        <h1>Ranking</h1>
+        <table border="1">
+          <tr>
+            <th>Team</th>
+            <th>Score</th>
+          </tr>
+          ${scores.map(score => `
+            <tr>
+              <td>${score.team}</td>
+              <td>${score.score}</td>
+            </tr>
+          `).join('')}
+        </table>
+        <a href="/forms">Add new score</a>
+      </body>
+      </html>
+    `
+      response.send(html);
       return response.json(scores);
     });
-
+    
     app.post('/add-score', async (request, response) => {
       const { team, score } = request.body;
 
