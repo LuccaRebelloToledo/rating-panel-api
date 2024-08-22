@@ -50,8 +50,8 @@ main()
       </body>
       </html>
     `
-      response.send(html);
-      return response.json(scores);
+    
+      return response.send(html);
     });
     
     app.post('/add-score', async (request, response) => {
