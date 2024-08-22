@@ -3,12 +3,14 @@ require('express-async-errors');
 
 const http = require('node:http');
 
-const { CREATED, BAD_REQUEST } = require('http-status-codes').StatusCodes;
+const { BAD_REQUEST, PERMANENT_REDIRECT } =
+  require('http-status-codes').StatusCodes;
 
 const {
   createScoresFile,
   addScore,
   getScoresAscending,
+  getTeamsName,
 } = require('./functions');
 
 const main = async () => {
@@ -23,11 +25,13 @@ main()
     const app = express();
 
     app.use(express.json());
+    app.use(express.urlencoded({ extended: true }));
 
     app.get('/', async (_request, response) => {
       const scores = await getScoresAscending();
 
       const html = `
+      <html>
       <head>
         <meta charset="UTF-8">
         <title>Ranking</title>
@@ -39,27 +43,63 @@ main()
             <th>Team</th>
             <th>Score</th>
           </tr>
-          ${scores.map(score => `
+          ${scores
+            .map(
+              (score) => `
             <tr>
               <td>${score.team}</td>
               <td>${score.score}</td>
             </tr>
-          `).join('')}
+          `,
+            )
+            .join('')}
         </table>
         <a href="/forms">Add new score</a>
       </body>
       </html>
-    `
-    
+    `;
+
       return response.send(html);
     });
-    
+
+    app.get('/forms', async (_request, response) => {
+      const teams = await getTeamsName();
+
+      const html = `
+      <html>
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Cadastro de Pontuação</title>
+        </head>
+        <body>
+            <h1>Cadastro de Pontuação</h1>
+            <form action="/add-score" method="post">
+                <label for="team">Selecione o time:</label>
+                <select id="team" name="team">
+                    ${teams.map((team) => {
+                      return `<option value="${team}">${team}</option>`;
+                    })}
+                </select>
+                <br><br>
+                <label for="score">Pontuação:</label>
+                <input type="number" id="score" name="score" min="1" max="3" required>
+                <br><br>
+                <button type="submit">Enviar</button>
+            </form>
+        </body>
+      </html>
+`;
+
+      return response.send(html);
+    });
+
     app.post('/add-score', async (request, response) => {
       const { team, score } = request.body;
 
       await addScore(team, score);
 
-      return response.status(CREATED).json();
+      return response.status(PERMANENT_REDIRECT).redirect('/');
     });
 
     app.get('/status', (_request, response) => {
