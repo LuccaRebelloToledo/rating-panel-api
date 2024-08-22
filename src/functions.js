@@ -1,6 +1,6 @@
 const fs = require('fs').promises;
 
-const SCORES_FILE = './scores.json';
+const SCORES_FILE = './src/scores.json';
 
 const writeScoresFile = async (data) => {
   await fs.writeFile(SCORES_FILE, JSON.stringify(data, null, '\t'));
