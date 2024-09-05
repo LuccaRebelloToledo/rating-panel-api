@@ -1,15 +1,12 @@
 const express = require('express');
 require('express-async-errors');
 
-const expressLayouts = require('express-ejs-layouts');
-
-const { BAD_REQUEST, PERMANENT_REDIRECT } =
-  require('http-status-codes').StatusCodes;
+const { BAD_REQUEST, CREATED } = require('http-status-codes').StatusCodes;
 
 const {
   createScoresFile,
   addScore,
-  getScoresAscending,
+  getScoresDescending,
   getTeamsName,
 } = require('./functions');
 
@@ -24,30 +21,24 @@ main()
   .then(() => {
     const app = express();
 
+    app.use(express.static('public'));
     app.use(express.json());
     app.use(express.urlencoded({ extended: true }));
 
-    app.set('view engine', 'ejs');
-    app.set('views', './src/views');
-    app.use(expressLayouts);
-    app.set('layout', 'layout');
-
-    app.get('/', async (_request, response) => {
-      const scores = await getScoresAscending();
-
-      return response.render('ranking', {
-        title: 'Ranking das Equipes',
-        scores,
-      });
+    app.get('/status', (_request, response) => {
+      return response.json({ message: 'OK!' });
     });
 
-    app.get('/forms', async (_request, response) => {
+    app.get('/scores', async (_request, response) => {
+      const scores = await getScoresDescending();
+
+      return response.json(scores);
+    });
+
+    app.get('/teams', async (_request, response) => {
       const teams = await getTeamsName();
 
-      return response.render('forms', {
-        title: 'Cadastro de Pontuação',
-        teams,
-      });
+      return response.json(teams);
     });
 
     app.post('/add-score', async (request, response) => {
@@ -55,11 +46,7 @@ main()
 
       await addScore(team, score);
 
-      return response.status(PERMANENT_REDIRECT).redirect('/');
-    });
-
-    app.get('/status', (_request, response) => {
-      return response.json({ message: 'OK!' });
+      return response.status(CREATED).json({ team, score });
     });
 
     app.use(function (error, _request, response, next) {

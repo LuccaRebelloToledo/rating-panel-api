@@ -60,15 +60,15 @@ const addScore = async (team, score) => {
   await writeScoresFile(scores);
 };
 
-const getScoresAscending = async () => {
+const getScoresDescending = async () => {
   const scores = await readScoresFile();
 
-  return scores.sort((a, b) => a.score - b.score);
+  return scores.sort((a, b) => b.score - a.score);
 };
 
 module.exports = {
   createScoresFile,
   addScore,
-  getScoresAscending,
+  getScoresDescending,
   getTeamsName,
 };
