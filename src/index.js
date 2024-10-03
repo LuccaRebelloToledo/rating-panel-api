@@ -10,6 +10,8 @@ const {
   getTeamsName,
 } = require('./functions');
 
+const { addScoreSchema } = require('./validations');
+
 const main = async () => {
   await createScoresFile();
   console.log('Scores file loaded!');
@@ -43,6 +45,8 @@ main()
 
     app.post('/add-score', async (request, response) => {
       const { team, score } = request.body;
+
+      await addScoreSchema.parseAsync({ team, score });
 
       await addScore(team, score);
 
