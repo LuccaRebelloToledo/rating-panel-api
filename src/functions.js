@@ -1,73 +1,34 @@
-const fs = require('fs').promises;
-
-const SCORES_FILE = './src/scores.json';
-
-const writeScoresFile = async (data) => {
-  await fs.writeFile(SCORES_FILE, JSON.stringify(data, null, '\t'));
-};
-
-const createScoresFile = async () => {
-  fs.open(SCORES_FILE, 'r')
-    .then(async (fd) => {
-      await fd.close();
-    })
-    .catch(async (error) => {
-      if (error.code === 'ENOENT') {
-        await writeScoresFile([]);
-
-        console.log('Scores file created!');
-      }
-    });
-};
-
-const readScoresFile = async () => {
-  const data = await fs.readFile(SCORES_FILE, {
-    encoding: 'utf8',
-  });
-
-  return JSON.parse(data);
-};
+const { Score } = require('../models');
 
 const getTeamsName = async () => {
-  const datas = await readScoresFile();
+  const scores = await Score.findAll({
+    attributes: ['team'],
+  });
 
-  return datas.map((data) => data.team);
+  return scores.map((score) => score.team);
 };
 
 const addScore = async (team, score) => {
-  if (!team || typeof team !== 'string') {
-    throw new Error('Team are required or must be a string!');
+  const teamRecord = await Score.findOne({ where: { team } });
+
+  if (!teamRecord) {
+    throw new Error('Team not found.');
   }
 
-  if (isNaN(score)) {
-    throw new Error('Score are required or must be a number!');
-  }
+  teamRecord.score += parseInt(score);
 
-  if (score > 3 || score < 1) {
-    throw new Error('Score must be between 1 and 3!');
-  }
-
-  const scores = await readScoresFile();
-
-  const teamIndex = scores.findIndex((item) => item.team === team);
-
-  if (teamIndex === -1) {
-    throw Error('Team not found.');
-  }
-
-  scores[teamIndex].score += parseInt(score);
-
-  await writeScoresFile(scores);
+  await teamRecord.save();
 };
 
 const getScoresDescending = async () => {
-  const scores = await readScoresFile();
+  const scores = await Score.findAll({
+    order: [['score', 'DESC']],
+  });
 
-  return scores.sort((a, b) => b.score - a.score);
+  return scores;
 };
 
 module.exports = {
-  createScoresFile,
   addScore,
   getScoresDescending,
   getTeamsName,
