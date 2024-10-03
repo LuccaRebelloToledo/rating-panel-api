@@ -10,10 +10,10 @@
 <body>
     <div class="container">
         <h1>Adicionar Pontuação</h1>
-        <form id="add-score-form">
+        <form method="post" action="/add-score">
             <div class="form-group">
-                <label for="team-name">Nome da Equipe</label>
-                <select id="team-name" name="team-name" class="form-control" required>
+                <label for="team">Nome da Equipe</label>
+                <select id="team-name" name="team" class="form-control" required>
                   <option value="">Selecione uma equipe</option>
                 </select>
             </div>
@@ -22,7 +22,6 @@
                 <select id="score" name="score" class="form-control" required>
                   <option value="">Selecione uma pontuação</option>
                   <option value="1">1</option>
-                  <option value="2">2</option>
                   <option value="3">3</option>
               </select>
             </div>

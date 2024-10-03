@@ -1,3 +1,7 @@
+const reloadPage = () => {
+  location.reload();
+};
+
 const populateRankings = async () => {
   const scores = await fetch('/scores').then((response) => response.json());
 
@@ -46,3 +50,5 @@ const populateRankings = async () => {
 };
 
 window.onload = populateRankings;
+
+setInterval(reloadPage, 10000);

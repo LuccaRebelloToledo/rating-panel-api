@@ -1,7 +1,8 @@
+const http = require('node:http')
 const express = require('express');
 require('express-async-errors');
 
-const { BAD_REQUEST, CREATED } = require('http-status-codes').StatusCodes;
+const { BAD_REQUEST, PERMANENT_REDIRECT } = require('http-status-codes').StatusCodes;
 
 const {
   createScoresFile,
@@ -33,6 +34,8 @@ main()
       next();
     });
 
+    app.get('/', (_request, response) => {});
+
     app.get('/status', (_request, response) => {
       return response.json({ message: 'OK!' });
     });
@@ -50,13 +53,15 @@ main()
     });
 
     app.post('/add-score', async (request, response) => {
-      const { team, score } = request.body;
+      let { team, score } = request.body;
+
+      score = Number(score)
 
       await addScoreSchema.parseAsync({ team, score });
 
       await addScore(team, score);
 
-      return response.status(CREATED).json({ team, score });
+      return response.status(PERMANENT_REDIRECT).redirect('/');
     });
 
     app.use(function (error, _request, response, next) {
@@ -70,8 +75,11 @@ main()
         next();
       }
     });
+    
 
-    app.listen(PORT, () => {
+    const server = http.createServer(app);
+
+    server.listen(PORT, () => {
       console.log(`Server running on port ${PORT}`);
     });
   })
