@@ -12,7 +12,9 @@ const PORT = 4000;
 const app = express();
 
 app.use(express.static('public'));
-app.use(express.json());
+app.set('view engine', 'ejs');
+app.set('views', './views');
+
 app.use(express.urlencoded({ extended: true }));
 
 app.use((request, _response, next) => {
@@ -30,16 +32,16 @@ app.get('/status', (_request, response) => {
   return response.json({ message: 'OK!' });
 });
 
-app.get('/scores', async (_request, response) => {
+app.get('/', async (_request, response) => {
   const scores = await getScoresDescending();
 
-  return response.json(scores);
+  return response.render('index', { scores });
 });
 
-app.get('/teams', async (_request, response) => {
+app.get('/add-score', async (_request, response) => {
   const teams = await getTeamsName();
 
-  return response.json(teams);
+  return response.render('add-score', { teams });
 });
 
 app.post('/add-score', async (request, response) => {
@@ -51,14 +53,20 @@ app.post('/add-score', async (request, response) => {
 
   await addScore(team, score);
 
-  return response.redirect('/');
+  return response.send(
+    '<script>alert("Score adicionado com sucesso!"); window.location.href = "/add-score";</script>',
+  );
 });
 
 app.use(function (error, _request, response, next) {
   console.log(error);
 
   if (error) {
-    return response.status(BAD_REQUEST).send(error.message);
+    return response
+      .status(BAD_REQUEST)
+      .send(
+        `<script>alert("Error: ${error.message}"); window.location.href = "/";</script>`,
+      );
   }
 
   next();
