@@ -27,6 +27,12 @@ main()
     app.use(express.json());
     app.use(express.urlencoded({ extended: true }));
 
+    app.use((request, _response, next) => {
+      console.log('Request received:', request.method, request.url, new Date().toISOString());
+
+      next();
+    });
+
     app.get('/status', (_request, response) => {
       return response.json({ message: 'OK!' });
     });
